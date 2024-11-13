@@ -145,9 +145,9 @@ class Penjualan extends CI_Controller {
         $id_pelanggan = $this->input->post('id_pelanggan');
     
         // Cek apakah kode_penjualan ini sudah dibayar di tabel utama penjualan
-        $this->db->from('penjualan'); // Asumsikan tabel ini menyimpan transaksi utama
+        $this->db->from('penjualan');
         $this->db->where('kode_penjualan', $kode_penjualan);
-        $this->db->where('status_pembayaran', 'sudah'); // Pastikan status pembayaran sudah dibayar (1)
+        $this->db->where('status_pembayaran', 'sudah');
         $cek_kode_sudah_dibayar = $this->db->get()->num_rows();
     
         if ($cek_kode_sudah_dibayar > 0) {
@@ -159,20 +159,23 @@ class Penjualan extends CI_Controller {
             return;
         }
     
-        // Lanjutkan dengan pengecekan lainnya
-// Cek apakah produk sudah ada dalam keranjang berdasarkan id_produk dan kode_penjualan yang sama
-$this->db->from('detail_penjualan');
-$this->db->where('id_produk', $id_produk);  // Gunakan id_produk untuk pengecekan, bukan deskripsi
-$this->db->where('kode_penjualan', $kode_penjualan);
-$cek = $this->db->get()->result_array();
-
-if (!empty($cek)) {
-    $this->session->set_flashdata('notifikasi', '
-        <div class="alert alert-danger" role="alert">Produk sudah dipilih dengan kode penjualan yang sama!</div>
-    ');
-    redirect($_SERVER['HTTP_REFERER']);
-    return;
-}
+        // Cek apakah pelanggan sudah memiliki kode_penjualan berbeda yang belum selesai (status_pembayaran = 'belum')
+        $this->db->from('detail_penjualan');
+        $this->db->where('id_pelanggan', $id_pelanggan);
+        $this->db->where('status_pembayaran', 'belum');
+        $cek_transaksi = $this->db->get()->result_array();
+    
+        if (!empty($cek_transaksi)) {
+            $kode_penjualan_eksisting = $cek_transaksi[0]['kode_penjualan'];
+            if ($kode_penjualan_eksisting !== $kode_penjualan) {
+                // Jika ada kode_penjualan berbeda, tampilkan pesan error
+                $this->session->set_flashdata('notifikasi', '
+                    <div class="alert alert-danger" role="alert">Anda hanya dapat menggunakan satu kode penjualan dalam satu transaksi!</div>
+                ');
+                redirect($_SERVER['HTTP_REFERER']);
+                return;
+            }
+        }
     
         // Ambil data produk berdasarkan id_produk
         $this->db->from('produk')->where('id_produk', $id_produk);
@@ -196,7 +199,7 @@ if (!empty($cek)) {
         // Hitung stok sekarang
         $stok_sekarang = $stok_lama - $bahan_terpakai;
     
-        // Data yang akan disimpan, tambahkan 'status_pembayaran' => 0
+        // Data yang akan disimpan, tambahkan 'status_pembayaran' => 'belum'
         $data = array(
             'kode_penjualan' => $kode_penjualan,
             'id_produk'      => $id_produk,
@@ -206,7 +209,7 @@ if (!empty($cek)) {
             'panjang'        => $panjang,
             'lebar'          => $lebar,
             'bahan_terpakai' => $bahan_terpakai,
-            'status_pembayaran' => 'belum' // Set status pembayaran ke 0
+            'status_pembayaran' => 'belum'
         );
     
         if ($stok_lama >= $bahan_terpakai) {

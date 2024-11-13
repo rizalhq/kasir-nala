@@ -138,6 +138,7 @@
 						<thead>
 							<tr>
 								<th>No</th>
+								<th>No Pesanan</th>
 								<th>Produk</th>
 								<th>Panjang</th>
 								<th>Lebar</th>
@@ -151,6 +152,7 @@
 							<?php $total=0; $no=1; foreach($detail as $row){ ?>
 							<tr>
 								<td><?= $no; ?></td>
+								<td><?= $row['kode_penjualan'] ?></td>
 								<td><?= $row['nama_produk'] ?></td>
 								<td><?= $row['panjang'] ?> Meter</td>
 								<td><?= $row['lebar'] ?> Meter</td>
@@ -165,7 +167,7 @@
 							</tr>
 							<?php $total=$total+$row['sub_total']; $no++; } ?>
 							<tr class="table-success exclude-search">
-								<td colspan="6">Total Harga</td>
+								<td colspan="7">Total Harga</td>
 								<td colspan="2">Rp. <?= number_format($total); ?></td>
 							</tr>
 						</tbody>
