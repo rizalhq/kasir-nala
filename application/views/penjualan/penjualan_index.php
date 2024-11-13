@@ -1,51 +1,54 @@
 <div class="row">
-    <!-- Pemasukan Hari Ini -->
-    <div class="col-lg-4 col-md-12 col-4 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <div class="card-title d-flex align-items-start justify-content-between">
-                    <div class="avatar flex-shrink-0">
-                        <img src="<?= base_url('aset/sneat')?>/assets/img/icons/unicons/line-chart-regular.png"
-                            alt="chart success" class="rounded green-filter" style="width: 30px; height: 30px;" />
-                    </div>
-                </div>
-                <span class="fw-semibold d-block mb-2">Total Pemasukan Hari Ini</span>
-                <h3 class="text-success card-title mb-4"><i class="bx bx-up-arrow-alt"></i>Rp. <?= number_format($pemasukan, 0, ',', '.') ?></h3>
-            </div>
-        </div>
-    </div>
+	<!-- Pemasukan Hari Ini -->
+	<div class="col-lg-4 col-md-12 col-4 mb-4">
+		<div class="card">
+			<div class="card-body">
+				<div class="card-title d-flex align-items-start justify-content-between">
+					<div class="avatar flex-shrink-0">
+						<img src="<?= base_url('aset/sneat')?>/assets/img/icons/unicons/line-chart-regular.png"
+							alt="chart success" class="rounded green-filter" style="width: 30px; height: 30px;" />
+					</div>
+				</div>
+				<span class="fw-semibold d-block mb-2">Total Pemasukan Hari Ini</span>
+				<h3 class="text-success card-title mb-4"><i class="bx bx-up-arrow-alt"></i>Rp.
+					<?= number_format($pemasukan, 0, ',', '.') ?></h3>
+			</div>
+		</div>
+	</div>
 
-    <!-- Pengeluaran Hari Ini -->
-    <div class="col-lg-4 col-md-12 col-4 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <div class="card-title d-flex align-items-start justify-content-between">
-                    <div class="avatar flex-shrink-0">
-                        <img src="<?= base_url('aset/sneat')?>/assets/img/icons/unicons/line-chart-down-regular.png"
-                            alt="chart success" class="rounded red-filter" style="width: 30px; height: 30px;" />
-                    </div>
-                </div>
-                <span class="fw-semibold d-block mb-2">Total Pengeluaran Hari Ini</span>
-                <h3 class="text-danger card-title mb-4"><i class="bx bx-down-arrow-alt"></i>Rp. <?= number_format($pengeluaran, 0, ',', '.') ?></h3>
-            </div>
-        </div>
-    </div>
+	<!-- Pengeluaran Hari Ini -->
+	<div class="col-lg-4 col-md-12 col-4 mb-4">
+		<div class="card">
+			<div class="card-body">
+				<div class="card-title d-flex align-items-start justify-content-between">
+					<div class="avatar flex-shrink-0">
+						<img src="<?= base_url('aset/sneat')?>/assets/img/icons/unicons/line-chart-down-regular.png"
+							alt="chart success" class="rounded red-filter" style="width: 30px; height: 30px;" />
+					</div>
+				</div>
+				<span class="fw-semibold d-block mb-2">Total Pengeluaran Hari Ini</span>
+				<h3 class="text-danger card-title mb-4"><i class="bx bx-down-arrow-alt"></i>Rp.
+					<?= number_format($pengeluaran, 0, ',', '.') ?></h3>
+			</div>
+		</div>
+	</div>
 
-    <!-- Hutang Hari Ini -->
-    <div class="col-lg-4 col-md-12 col-4 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <div class="card-title d-flex align-items-start justify-content-between">
-                    <div class="avatar flex-shrink-0">
-                        <img src="<?= base_url('aset/sneat')?>/assets/img/icons/unicons/line-chart-down-regular.png"
-                            alt="chart success" class="rounded red-filter" style="width: 30px; height: 30px;" />
-                    </div>
-                </div>
-                <span class="fw-semibold d-block mb-2">Total Pembayaran Yang Kurang Hari Ini</span>
-                <h3 class="text-danger card-title mb-4"><i class="bx bx-down-arrow-alt"></i>Rp. <?= number_format($hutang, 0, ',', '.') ?></h3>
-            </div>
-        </div>
-    </div>
+	<!-- Hutang Hari Ini -->
+	<div class="col-lg-4 col-md-12 col-4 mb-4">
+		<div class="card">
+			<div class="card-body">
+				<div class="card-title d-flex align-items-start justify-content-between">
+					<div class="avatar flex-shrink-0">
+						<img src="<?= base_url('aset/sneat')?>/assets/img/icons/unicons/line-chart-down-regular.png"
+							alt="chart success" class="rounded red-filter" style="width: 30px; height: 30px;" />
+					</div>
+				</div>
+				<span class="fw-semibold d-block mb-2">Total Pembayaran Yang Kurang Hari Ini</span>
+				<h3 class="text-danger card-title mb-4"><i class="bx bx-down-arrow-alt"></i>Rp.
+					<?= number_format($hutang, 0, ',', '.') ?></h3>
+			</div>
+		</div>
+	</div>
 </div>
 
 
@@ -123,19 +126,19 @@
 					<td><?= $no; ?></td>
 					<td><?= $row['kode_penjualan'] ?></td>
 					<td><?= $row['nama_pelanggan'] ?></td>
-					<td><?= $row['tanggal_penjualan'] ?></td>
+					<td><?= date("d F Y", strtotime($row['tanggal_penjualan'])) ?></td>
 					<td>Rp. <?= number_format($row['total_harga']) ?></td>
 					<td>
 						<?php 
-                // Jika status pembayaran belum lunas
-                if($row['status_pembayaran'] == 'Belum Lunas'){ 
-                    echo "<span style='color: red;'>Belum Lunas</span>";
-                } 
-                // Jika status pembayaran lunas
-                else if($row['status_pembayaran'] == 'Lunas') {
-                    echo "<span style='color: green;'>Lunas</span>";
-                }
-            ?>
+					// Jika status pembayaran belum lunas
+					if($row['status_pembayaran'] == 'Belum Lunas'){ 
+						echo "<span style='color: red;'>Belum Lunas</span>";
+					} 
+					// Jika status pembayaran lunas
+					else if($row['status_pembayaran'] == 'Lunas') {
+						echo "<span style='color: green;'>Lunas</span>";
+					}
+				?>
 					</td>
 					<td>Rp. <?= number_format($row['jumlah_kurang']) ?></td>
 					<td>
@@ -145,6 +148,9 @@
 							data-bs-target="#pembayaran-<?= $row['id_penjualan'] ?>">
 							Edit Pembayaran
 						</button>
+						<a onclick="return confirm('Apakah anda yakin membatalkan pesanan ini?')" 
+   href="<?= base_url('penjualan/batalpemesanan/'.$row['kode_penjualan']) ?>" 
+   class="btn btn-danger btn-sm text-white">Batalkan Pesanan</a>
 					</td>
 				</tr>
 				<!-- edit -->
@@ -415,6 +421,122 @@
 		const statusLabel = document.querySelector(`#pembayaran-${id} .modal-title`);
 		if (totalAkhir === 0) {
 			statusLabel.textContent = statusLabel.textContent.replace(/Lunas|Belum Lunas/, "Lunas");
+		}
+	}
+</script>
+<script>
+	const modalRowsPerPageOptions = [10, 25, 50, 100];
+	let modalCurrentPage = 1;
+	let modalRowsPerPage = 10;
+
+	document.getElementById('pilihProduk').addEventListener('shown.bs.modal', function () {
+		modalCurrentPage = 1;
+		displayModalTableRows();
+	});
+
+	function updateTableModal() {
+		modalRowsPerPage = parseInt(document.getElementById("entriesPerPageModal").value);
+		modalCurrentPage = 1;
+		displayModalTableRows();
+	}
+
+	function displayModalTableRows() {
+		const tableBody = document.getElementById("tableBodyModal");
+		const rows = Array.from(tableBody.getElementsByTagName("tr"));
+		const searchInput = document.getElementById("searchInputModal").value.toLowerCase();
+
+		// Filter baris berdasarkan input pencarian, kecuali kolom kedua (index 1)
+		const filteredRows = rows.filter(row => {
+			return Array.from(row.cells).some((cell, index) => {
+				// Mengecualikan kolom kedua (index 1) dari pencarian
+				return index !== 4 && cell.textContent.toLowerCase().includes(searchInput);
+			});
+		});
+
+		// Sembunyikan semua baris
+		rows.forEach(row => row.style.display = "none");
+
+		// Hitung indeks mulai dan akhir untuk baris yang ditampilkan
+		const start = (modalCurrentPage - 1) * modalRowsPerPage;
+		const end = start + modalRowsPerPage;
+
+		// Tampilkan baris yang relevan setelah pemfilteran
+		for (let i = start; i < end && i < filteredRows.length; i++) {
+			filteredRows[i].style.display = "";
+		}
+
+		// Panggil fungsi untuk memperbarui kontrol pagination
+		displayModalPaginationControls(filteredRows.length);
+	}
+
+	function displayModalPaginationControls(filteredRowsCount) {
+		const paginationControls = document.getElementById("paginationControls");
+		paginationControls.innerHTML = "";
+		const totalPages = Math.ceil(filteredRowsCount / modalRowsPerPage);
+
+		// Buat tombol pagination
+		for (let i = 1; i <= totalPages; i++) {
+			const li = document.createElement("li");
+			li.className = "page-item" + (i === modalCurrentPage ? " active" : "");
+			li.innerHTML = `<a class="page-link" href="#" onclick="goToModalPage(${i})">${i}</a>`;
+			paginationControls.appendChild(li);
+		}
+	}
+
+	function goToModalPage(pageNumber) {
+		modalCurrentPage = pageNumber;
+		displayModalTableRows();
+	}
+
+	function filterTableModal() {
+		displayModalTableRows();
+	}
+
+	// Inisialisasi tampilan tabel modal saat pertama kali halaman dimuat
+	window.onload = function () {
+		document.getElementById("searchInputModal").addEventListener("keyup", filterTableModal);
+		updateTableModal();
+	};
+
+	function openProductModal(callerModalId) {
+		var pilihProdukModal = document.getElementById('pilihProduk');
+		pilihProdukModal.setAttribute('data-bs-caller', callerModalId); // Set data pemanggil
+
+		var modalInstance = new bootstrap.Modal(pilihProdukModal);
+		modalInstance.show();
+	}
+
+	function selectProduct(productName, productId) {
+		var callerModalId = document.getElementById('pilihProduk').getAttribute('data-bs-caller');
+
+		// Pilih elemen input berdasarkan modal pemanggil
+		if (callerModalId === 'basicModal') {
+			document.getElementById('selectedProductBasic').value = productName;
+			document.getElementById('selectedProductIdBasic').value = productId;
+		} else if (callerModalId === 'laporan') {
+			document.getElementById('selectedProductLaporan').value = productName;
+			document.getElementById('selectedProductIdLaporan').value = productId;
+		}
+
+		// Tutup modal "Pilih Produk"
+		var pilihProdukModal = bootstrap.Modal.getInstance(document.getElementById('pilihProduk'));
+		pilihProdukModal.hide();
+
+		// Pastikan backdrop dihapus
+		removeBackdrop();
+
+		// Tampilkan kembali modal pemanggil
+		if (callerModalId) {
+			var callerModal = new bootstrap.Modal(document.getElementById(callerModalId));
+			callerModal.show();
+		}
+	}
+
+	// Fungsi untuk menghapus backdrop
+	function removeBackdrop() {
+		var backdrop = document.querySelector('.modal-backdrop');
+		if (backdrop) {
+			backdrop.parentNode.removeChild(backdrop);
 		}
 	}
 </script>

@@ -1,4 +1,5 @@
 <?= $this->session->flashdata('notifikasi'); ?>
+<!-- form untuk tambah keranjang -->
 <div class="row">
 	<!-- Basic Layout -->
 	<div class="col-xxl">
@@ -8,7 +9,7 @@
 					<div class="row mb-3">
 						<label class="col-sm-2 col-form-label" for="basic-default-name">No Pesanan</label>
 						<div class="col-sm-10">
-							<input type="text" name="kode_penjualan" class="form-control" value="<?= $nota ?>" readonly>
+							<input type="number" name="kode_penjualan" class="form-control" required>
 							<input type="hidden" name="id_pelanggan" class="form-control" value="<?= $id_pelanggan ?>">
 						</div>
 					</div>
@@ -51,22 +52,22 @@
 		</div>
 	</div>
 	<div class="row mb-3">
-		<label class="col-sm-2 col-form-label">Panjang (m)</label>
-		<div class="col-sm-2">
-			<input type="number" name="panjang" id="panjang" class="form-control"
-				placeholder="Panjang" oninput="calculateTotal()" required>
-		</div>
-		<label class="col-sm-2 col-form-label">Lebar (m)</label>
-		<div class="col-sm-2">
-			<input type="number" name="lebar" id="lebar" class="form-control" placeholder="Lebar"
-				oninput="calculateTotal()" required>
-		</div>
-		<label class="col-sm-2 col-form-label">Bahan Terpakai (m)</label>
-		<div class="col-sm-2">
-			<input type="number" name="bahan_terpakai" id="bahan_terpakai" class="form-control"
-				required style="background-color: #e9ecef;">
-		</div>
+	<label class="col-sm-2 col-form-label">Panjang (m)</label>
+	<div class="col-sm-2">
+		<input type="text" name="panjang" id="panjang" class="form-control"
+			placeholder="Panjang" oninput="validateInput(this); calculateTotal();" required>
 	</div>
+	<label class="col-sm-2 col-form-label">Lebar (m)</label>
+	<div class="col-sm-2">
+		<input type="text" name="lebar" id="lebar" class="form-control" placeholder="Lebar"
+			oninput="validateInput(this); calculateTotal();" required>
+	</div>
+	<label class="col-sm-2 col-form-label">Bahan Terpakai (m)</label>
+	<div class="col-sm-2">
+		<input type="text" name="bahan_terpakai" id="bahan_terpakai" class="form-control"
+			required style="background-color: #e9ecef;" oninput="validateInput(this);">
+	</div>
+</div>
 </div>
 
 					<!-- Field untuk produk Pcs -->
@@ -103,7 +104,7 @@
 		</div>
 	</div>
 </div>
-
+<!-- form untuk bayar barang pada keranjang -->
 <div class="row">
 	<div class="col-xxl">
 		<div class="card mb-4">
@@ -266,7 +267,7 @@
 			<form action="<?= base_url('penjualan/bayar') ?>" method="post" id="paymentForm">
 				<div class="modal-body">
 					<input type="hidden" name="id_pelanggan" value="<?= $id_pelanggan; ?>">
-					<input type="hidden" name="nota" value="<?= $nota; ?>">
+					<input type="hidden" name="nota" value="<?= $kode_penjualan_belum_dibayar; ?>">
 					<input type="hidden" name="total" id="totalBayar" value="<?= $total; ?>">
 
 					<div class="row mb-3">
@@ -433,6 +434,17 @@
 			document.getElementById("panjang").setAttribute('required', 'true');
 			document.getElementById("lebar").setAttribute('required', 'true');
 			document.getElementById("bahan_terpakai").setAttribute('required', 'true');
+		}
+	}
+
+	function validateInput(input) {
+		// Mengganti titik dengan koma dan menghapus karakter non-numerik kecuali angka dan koma
+		input.value = input.value.replace('.', ',').replace(/[^0-9,]/g, '');
+
+		// Memastikan hanya ada satu koma dalam input
+		const parts = input.value.split(',');
+		if (parts.length > 2) {
+			input.value = parts[0] + ',' + parts[1].replace(/,/g, '');
 		}
 	}
 

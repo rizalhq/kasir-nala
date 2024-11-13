@@ -7,6 +7,9 @@ class Stok extends CI_Controller {
         if($this->session->userdata('level')==NULL){
             redirect('auth');
         }
+        if($this->session->userdata('level')=='kasir'){
+            redirect('auth');
+        }
     }
     public function index() {
         // Melakukan join antara tabel stok dan produk

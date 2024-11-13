@@ -119,12 +119,14 @@
                 <div data-i18n="Analytics">Pembelian Bahan</div>
               </a>
             </li> -->
+            <?php if($this->session->userdata('level')=='admin'){?>
             <li class="menu-item <?php if($halaman=='stok'){ echo "active"; }?>">
               <a href="<?= base_url('stok') ?>" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-cart"></i>
                 <div data-i18n="Analytics"> Pembelian Stok Bahan</div>
               </a>
             </li>
+            <?php } ?>
             <li class="menu-item <?php if($halaman=='pengeluaran'){ echo "active"; }?>">
               <a href="<?= base_url('pengeluaran') ?>" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-log-out"></i>

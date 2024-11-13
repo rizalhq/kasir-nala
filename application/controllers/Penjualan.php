@@ -16,7 +16,7 @@ class Penjualan extends CI_Controller {
         $this->db->from('penjualan');
         $this->db->join('pelanggan', 'penjualan.id_pelanggan = pelanggan.id_pelanggan', 'left');
         $this->db->join('pembayaran', 'penjualan.id_penjualan = pembayaran.id_penjualan', 'left');
-        $this->db->order_by('penjualan.id_penjualan', 'DESC');
+        $this->db->order_by('penjualan.id_pelanggan', 'DESC');
         $penjualan = $this->db->get()->result_array();
     
         // Mengambil data pelanggan
@@ -77,57 +77,102 @@ class Penjualan extends CI_Controller {
         );
         $this->load->view('laporan/penjualan', $data);
     }
-    public function transaksi($id_pelanggan){
+    public function transaksi($id_pelanggan) {
+        // Ambil semua produk
         $this->db->from('produk');
         $this->db->order_by('id_produk', 'ASC');
         $produk = $this->db->get()->result_array();
-		date_default_timezone_set("Asia/Jakarta");
-		$tanggal = date('Y-m');
-		$this->db->from('penjualan');
-		$this->db->where("DATE_FORMAT(tanggal_penjualan,'%Y-%m')", $tanggal);
-		$jumlah = $this->db->count_all_results();
-		$nota = ('0090').$jumlah+1;
-
-		$this->db->from('pelanggan')->where('id_pelanggan',$id_pelanggan);
-		$namapelanggan = $this->db->get()->row()->nama_pelanggan;
-		
-		$this->db->from('detail_penjualan a');
-		$this->db->join('produk b','a.id_produk=b.id_produk','left');
-		$this->db->where('a.kode_penjualan',$nota);
-		$this->db->where('a.id_pelanggan',$id_pelanggan);
-		$detail = $this->db->get()->result_array();
-
-        $this->db->from('produk');
-        $this->db->order_by('nama_produk', 'ASC');
-        $produk = $this->db->get()->result_array();
-
-		$data = array(
-			'judul_halaman' => 'Nala > Transaksi Penjualan',	
-			'nota'			=> $nota,
-			'id_pelanggan'	=> $id_pelanggan,
-			'namapelanggan'	=> $namapelanggan,
-			'detail'		=> $detail,
-			'produk'		=> $produk,
-			'produk'		=> $produk,
-		);
-		$this->template->load('template', 'penjualan/penjualan_transaksi',$data);
-	}
-    public function tambahkeranjang() {
-        // Ambil `id_produk` dari input
-        $id_produk = $this->input->post('id_produk');
-        
-        // Cek apakah produk sudah ada dalam keranjang berdasarkan deskripsi dan kode_penjualan
-        $this->db->from('detail_penjualan');
-        $this->db->where('deskripsi', $this->input->post('deskripsi'));
-        $this->db->where('kode_penjualan', $this->input->post('kode_penjualan'));
-        $cek = $this->db->get()->result_array();
     
-        if (!empty($cek)) {
+        // Set zona waktu dan ambil total penjualan bulan ini
+        date_default_timezone_set("Asia/Jakarta");
+        $tanggal = date('Y-m');
+        $this->db->from('penjualan');
+        $this->db->where("DATE_FORMAT(tanggal_penjualan,'%Y-%m')", $tanggal);
+        $total_penjualan = $this->db->count_all_results();
+    
+        // Ambil nama pelanggan
+        $this->db->from('pelanggan')->where('id_pelanggan', $id_pelanggan);
+        $namapelanggan = $this->db->get()->row()->nama_pelanggan;
+    
+        // Cek apakah kode_penjualan yang sudah dibayar sudah ada
+        $this->db->from('penjualan');
+        $this->db->join('detail_penjualan', 'penjualan.kode_penjualan = detail_penjualan.kode_penjualan', 'left');
+        $this->db->where('detail_penjualan.id_pelanggan', $id_pelanggan);
+        $this->db->where('detail_penjualan.status_pembayaran', 'sudah'); // status pembayaran sudah dibayar
+        $kode_penjualan_dibayar = $this->db->get()->row(); // Ambil data kode_penjualan yang sudah dibayar
+    
+        if ($kode_penjualan_dibayar) {
+            // Jika kode penjualan sudah dibayar, tampilkan pesan atau nonaktifkan input
+            $kode_penjualan_status = 'Kode penjualan ini sudah dibayar, tidak bisa digunakan lagi!';
+        } else {
+            $kode_penjualan_status = '';
+        }
+    
+        // Ambil kode_penjualan terbaru yang belum dibayar untuk pelanggan ini
+        $this->db->select('kode_penjualan');
+        $this->db->from('detail_penjualan');
+        $this->db->where('id_pelanggan', $id_pelanggan);
+        $this->db->where('status_pembayaran', 'belum'); // Hanya yang belum dibayar
+        $this->db->order_by('id_detail', 'DESC');
+        $kode_penjualan_belum_dibayar = $this->db->get()->row()->kode_penjualan ?? null;
+    
+        // Ambil detail produk dalam keranjang yang belum dibayar oleh pelanggan
+        $this->db->from('detail_penjualan a');
+        $this->db->join('produk b', 'a.id_produk = b.id_produk', 'left');
+        $this->db->where('a.id_pelanggan', $id_pelanggan);
+        $this->db->where('a.status_pembayaran', 'belum'); // Hanya ambil item dengan status belum dibayar
+        $detail = $this->db->get()->result_array();
+    
+        // Kirim data ke view
+        $data = array(
+            'judul_halaman' => 'Nala > Transaksi Penjualan',
+            'total_penjualan' => $total_penjualan,
+            'id_pelanggan' => $id_pelanggan,
+            'namapelanggan' => $namapelanggan,
+            'detail' => $detail, // Hanya item belum dibayar yang ditampilkan di keranjang
+            'produk' => $produk,
+            'kode_penjualan_status' => $kode_penjualan_status, // Status untuk kode penjualan yang sudah dibayar
+            'kode_penjualan_belum_dibayar' => $kode_penjualan_belum_dibayar, // Kode penjualan yang belum dibayar
+        );
+    
+        $this->template->load('template', 'penjualan/penjualan_transaksi', $data);
+    }
+    
+    public function tambahkeranjang() {
+        // Ambil `id_produk`, `kode_penjualan`, dan `id_pelanggan` dari input
+        $id_produk = $this->input->post('id_produk');
+        $kode_penjualan = $this->input->post('kode_penjualan');
+        $id_pelanggan = $this->input->post('id_pelanggan');
+    
+        // Cek apakah kode_penjualan ini sudah dibayar di tabel utama penjualan
+        $this->db->from('penjualan'); // Asumsikan tabel ini menyimpan transaksi utama
+        $this->db->where('kode_penjualan', $kode_penjualan);
+        $this->db->where('status_pembayaran', 'sudah'); // Pastikan status pembayaran sudah dibayar (1)
+        $cek_kode_sudah_dibayar = $this->db->get()->num_rows();
+    
+        if ($cek_kode_sudah_dibayar > 0) {
+            // Jika kode_penjualan sudah dibayar, tampilkan pesan error
             $this->session->set_flashdata('notifikasi', '
-                <div class="alert alert-danger" role="alert">Produk sudah dipilih!</div>
+                <div class="alert alert-danger" role="alert">Kode penjualan ini sudah dibayar dan tidak bisa digunakan lagi!</div>
             ');
             redirect($_SERVER['HTTP_REFERER']);
+            return;
         }
+    
+        // Lanjutkan dengan pengecekan lainnya
+// Cek apakah produk sudah ada dalam keranjang berdasarkan id_produk dan kode_penjualan yang sama
+$this->db->from('detail_penjualan');
+$this->db->where('id_produk', $id_produk);  // Gunakan id_produk untuk pengecekan, bukan deskripsi
+$this->db->where('kode_penjualan', $kode_penjualan);
+$cek = $this->db->get()->result_array();
+
+if (!empty($cek)) {
+    $this->session->set_flashdata('notifikasi', '
+        <div class="alert alert-danger" role="alert">Produk sudah dipilih dengan kode penjualan yang sama!</div>
+    ');
+    redirect($_SERVER['HTTP_REFERER']);
+    return;
+}
     
         // Ambil data produk berdasarkan id_produk
         $this->db->from('produk')->where('id_produk', $id_produk);
@@ -140,22 +185,28 @@ class Penjualan extends CI_Controller {
                 <div class="alert alert-danger" role="alert">Produk tidak ditemukan!</div>
             ');
             redirect($_SERVER['HTTP_REFERER']);
+            return;
         }
     
-        // Ambil `bahan_terpakai` sesuai dengan tipe produk (PCS atau MMT)
-        $bahan_terpakai = (float) ($this->input->post('jumlah_pcs') ?: $this->input->post('bahan_terpakai'));
+        // Konversi inputan koma menjadi titik pada `bahan_terpakai`, `panjang`, dan `lebar`
+        $bahan_terpakai = (float) str_replace(',', '.', $this->input->post('jumlah_pcs') ?: $this->input->post('bahan_terpakai'));
+        $panjang = (float) str_replace(',', '.', $this->input->post('panjang') ?: 0);
+        $lebar = (float) str_replace(',', '.', $this->input->post('lebar') ?: 0);
+    
+        // Hitung stok sekarang
         $stok_sekarang = $stok_lama - $bahan_terpakai;
     
-        // Data yang akan disimpan, termasuk id_produk
+        // Data yang akan disimpan, tambahkan 'status_pembayaran' => 0
         $data = array(
-            'kode_penjualan' => $this->input->post('kode_penjualan'),
-            'id_produk'      => $id_produk, // Simpan id_produk, bukan nama_produk
+            'kode_penjualan' => $kode_penjualan,
+            'id_produk'      => $id_produk,
             'sub_total'      => $this->input->post('sub_total'),
             'deskripsi'      => $this->input->post('deskripsi'),
-            'id_pelanggan'   => $this->input->post('id_pelanggan'),
-            'panjang'        => $this->input->post('panjang') ?: 0,
-            'lebar'          => $this->input->post('lebar') ?: 0,
+            'id_pelanggan'   => $id_pelanggan,
+            'panjang'        => $panjang,
+            'lebar'          => $lebar,
             'bahan_terpakai' => $bahan_terpakai,
+            'status_pembayaran' => 'belum' // Set status pembayaran ke 0
         );
     
         if ($stok_lama >= $bahan_terpakai) {
@@ -180,6 +231,7 @@ class Penjualan extends CI_Controller {
         redirect($_SERVER['HTTP_REFERER']);
     }
     
+    
     public function hapus($id_detail,$id_produk){
 		$this->db->from('detail_penjualan')->where('id_detail',$id_detail);
 		$jumlah = $this->db->get()->row()->bahan_terpakai;
@@ -202,6 +254,53 @@ class Penjualan extends CI_Controller {
             ');
 		redirect($_SERVER['HTTP_REFERER']);
 	}
+    public function batalpemesanan($kode_penjualan) {
+        // Ambil data penjualan berdasarkan kode_penjualan
+        $this->db->from('penjualan')->where('kode_penjualan', $kode_penjualan);
+        $penjualan = $this->db->get()->row();
+    
+        if ($penjualan) {
+            // Ambil detail penjualan yang terkait dengan kode_penjualan
+            $this->db->from('detail_penjualan')->where('kode_penjualan', $kode_penjualan);
+            $detail_penjualan = $this->db->get()->result();
+    
+            // Mengembalikan stok produk yang dibatalkan
+            foreach ($detail_penjualan as $row) {
+                $this->db->from('produk')->where('id_produk', $row->id_produk);
+                $produk = $this->db->get()->row();
+    
+                if ($produk) {
+                    $stok_lama = $produk->jumlah_barang;
+                    $stok_sekarang = $stok_lama + $row->bahan_terpakai;
+                    // Update stok produk
+                    $this->db->update('produk', ['jumlah_barang' => $stok_sekarang], ['id_produk' => $row->id_produk]);
+                }
+            }
+    
+            // Hapus data terkait di tabel detail_penjualan berdasarkan kode_penjualan
+            $this->db->delete('detail_penjualan', ['kode_penjualan' => $kode_penjualan]);
+    
+            // Hapus data pembayaran terkait di tabel pembayaran berdasarkan id_penjualan
+            $this->db->delete('pembayaran', ['id_penjualan' => $penjualan->id_penjualan]);
+    
+            // Hapus data penjualan di tabel penjualan berdasarkan kode_penjualan
+            $this->db->delete('penjualan', ['kode_penjualan' => $kode_penjualan]);
+    
+            // Set notifikasi sukses
+            $this->session->set_flashdata('notifikasi', '
+                <div class="alert alert-success" role="alert">Pesanan berhasil dibatalkan!</div>
+            ');
+        } else {
+            // Jika penjualan tidak ditemukan
+            $this->session->set_flashdata('notifikasi', '
+                <div class="alert alert-danger" role="alert">Pesanan tidak ditemukan!</div>
+            ');
+        }
+    
+        // Redirect kembali ke halaman sebelumnya
+        redirect($_SERVER['HTTP_REFERER']);
+    }
+    
     public function bayar() {
         $kode_penjualan = $this->input->post('nota'); // Ambil kode penjualan
         $id_pelanggan = $this->input->post('id_pelanggan'); // Ambil ID pelanggan
@@ -246,6 +345,11 @@ class Penjualan extends CI_Controller {
         // Simpan data ke tabel pembayaran
         $this->db->insert('pembayaran', $data_pembayaran);
     
+        // Update status_pembayaran pada tabel detail_penjualan menjadi 'sudah'
+        $this->db->where('kode_penjualan', $kode_penjualan);
+        $this->db->where('id_pelanggan', $id_pelanggan);
+        $this->db->update('detail_penjualan', array('status_pembayaran' => 'sudah'));
+    
         // Set notifikasi
         $this->session->set_flashdata('notifikasi', '
             <div class="alert alert-success" role="alert">
@@ -255,7 +359,9 @@ class Penjualan extends CI_Controller {
     
         // Redirect ke halaman invoice
         redirect('penjualan/invoice/'.$kode_penjualan);
-    }  
+    }
+    
+     
     public function invoice($kode_penjualan){
 		$this->db->select('*');
 		$this->db->from('penjualan a')->order_by('a.tanggal_penjualan','DESC')->where('a.kode_penjualan',$kode_penjualan);

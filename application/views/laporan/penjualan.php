@@ -62,7 +62,7 @@
 			</tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="4" class="text-right font-weight-bold">Total Harga Beli</td>
+                        <td colspan="4" class="text-right font-weight-bold">Total</td>
                         <td class="font-weight-bold">Rp. <?= number_format($totalHargaBeli, 2, ',', '.') ?></td> <!-- Tampilkan total -->
                     </tr>
                 </tfoot>

@@ -32,7 +32,7 @@
     <div class="container">
         <div class="header">
             <h1>Nala Media</h1>
-            <h4>Laporan Piutang</h4>
+            <h4>Laporan Keuangan</h4>
         </div>
 
         <div class="table-responsive text-nowrap">

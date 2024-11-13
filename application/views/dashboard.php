@@ -107,7 +107,7 @@
 							<td><?= $row['nama_pelanggan'] ?></td>
 							<td><?= $row['alamat'] ?></td>
 							<td><?= $row['kode_penjualan'] ?></td>
-							<td><?= $row['tanggal_penjualan'] ?></td>
+							<td><?= date("d F Y", strtotime($row['tanggal_penjualan'])) ?></td>
 							<td>
 								<?php 
                                     // Jika status pembayaran belum lunas
@@ -152,7 +152,7 @@
 						<div class="col mb-3">
 							<label class="form-label">Status</label>
                             <select name="status_pembayaran" class="form-control">
-                                <option value=" ">Semua</option>
+                                <option value="">Semua</option>
                                 <option value="Lunas">Lunas</option>
                                 <option value="Belum Lunas">Belum Lunas</option>
                             </select>
