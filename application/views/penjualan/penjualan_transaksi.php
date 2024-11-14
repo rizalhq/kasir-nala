@@ -38,49 +38,53 @@
 					<div class="row mb-3">
 						<label class="col-sm-2 col-form-label">Keterangan</label>
 						<div class="col-sm-10">
-							<input type="text" name="deskripsi" id="keterangan" class="form-control" required>
+							<input type="text" name="deskripsi" id="keterangan" class="form-control" placeholder="Keterangan" required>
 						</div>
 					</div>
 
-<!-- Field untuk produk MMT -->
-<div id="meterProduk" style="display: none;">
-	<div class="row mb-3">
-		<label class="col-sm-2 col-form-label">Harga per Meter</label>
-		<div class="col-sm-10">
-			<input type="number" name="harga_per_meter" id="harga_per_meter" class="form-control"
-				oninput="calculateTotal()" required>
-		</div>
-	</div>
-	<div class="row mb-3">
-	<label class="col-sm-2 col-form-label">Panjang (m)</label>
-	<div class="col-sm-2">
-		<input type="text" name="panjang" id="panjang" class="form-control"
-			placeholder="Panjang" oninput="validateInput(this); calculateTotal();" required>
-	</div>
-	<label class="col-sm-2 col-form-label">Lebar (m)</label>
-	<div class="col-sm-2">
-		<input type="text" name="lebar" id="lebar" class="form-control" placeholder="Lebar"
-			oninput="validateInput(this); calculateTotal();" required>
-	</div>
-	<label class="col-sm-2 col-form-label">Bahan Terpakai (m)</label>
-	<div class="col-sm-2">
-		<input type="text" name="bahan_terpakai" id="bahan_terpakai" class="form-control"
-			required style="background-color: #e9ecef;" oninput="validateInput(this);">
-	</div>
-</div>
-</div>
+					<!-- Field untuk produk MMT -->
+					<div id="meterProduk" style="display: none;">
+						<div class="row mb-3">
+							<label class="col-sm-2 col-form-label">Harga per Meter</label>
+							<div class="col-sm-4">
+								<input type="number" name="harga_per_meter" id="harga_per_meter" class="form-control"
+									oninput="calculateTotal()" placeholder="Harga per meter" required>
+							</div>
+							<label class="col-sm-2 col-form-label">Jumlah (qty)</label>
+							<div class="col-sm-4">
+								<input type="number" name="qty" id="qty" class="form-control" oninput="calculateTotal()" placeholder="Jumlah" required>
+							</div>
+						</div>
+						<div class="row mb-3">
+							<label class="col-sm-2 col-form-label">Panjang (m)</label>
+							<div class="col-sm-2">
+								<input type="text" name="panjang" id="panjang" class="form-control"
+									placeholder="Panjang" oninput="validateInput(this); calculateTotal();" required>
+							</div>
+							<label class="col-sm-2 col-form-label">Lebar (m)</label>
+							<div class="col-sm-2">
+								<input type="text" name="lebar" id="lebar" class="form-control" placeholder="Lebar"
+									oninput="validateInput(this); calculateTotal();" required>
+							</div>
+							<label class="col-sm-2 col-form-label">Bahan Terpakai (m)</label>
+							<div class="col-sm-2">
+								<input type="text" name="bahan_terpakai" id="bahan_terpakai" class="form-control" placeholder="Bahan terpakai"
+									required style="background-color: #e9ecef;" oninput="validateInput(this);">
+							</div>
+						</div>
+					</div>
 
 					<!-- Field untuk produk Pcs -->
 					<div id="pcsFields" style="display: none;">
 						<div class="row mb-3">
 							<label class="col-sm-2 col-form-label">Harga</label>
 							<div class="col-sm-4">
-								<input type="number" name="harga_pcs" id="harga_pcs" class="form-control"
+								<input type="number" name="harga_pcs" id="harga_pcs" class="form-control" placeholder="Harga"
 									oninput="calculateTotalPcs()" required>
 							</div>
 							<label class="col-sm-2 col-form-label">Jumlah</label>
 							<div class="col-sm-4">
-								<input type="number" name="jumlah_pcs" id="jumlah_pcs" class="form-control"
+								<input type="number" name="jumlah_pcs" id="jumlah_pcs" class="form-control" placeholder="Jumlah"
 									oninput="calculateTotalPcs()" required>
 							</div>
 						</div>
@@ -143,6 +147,7 @@
 								<th>Panjang</th>
 								<th>Lebar</th>
 								<th>Bahan Terpakai</th>
+								<th>Qty</th>
 								<th>Deskripsi</th>
 								<th>Harga</th>
 								<th>Aksi</th>
@@ -157,6 +162,7 @@
 								<td><?= $row['panjang'] ?> Meter</td>
 								<td><?= $row['lebar'] ?> Meter</td>
 								<td><?= $row['bahan_terpakai'] ?> Meter</td>
+								<td><?= $row['qty'] ?></td>
 								<td><?= $row['deskripsi'] ?></td>
 								<td>Rp. <?= number_format($row['sub_total']) ?></td>
 								<td>
@@ -167,7 +173,7 @@
 							</tr>
 							<?php $total=$total+$row['sub_total']; $no++; } ?>
 							<tr class="table-success exclude-search">
-								<td colspan="7">Total Harga</td>
+								<td colspan="8">Total Harga</td>
 								<td colspan="2">Rp. <?= number_format($total); ?></td>
 							</tr>
 						</tbody>
@@ -320,6 +326,7 @@
 		</div>
 	</div>
 </div>
+
 <script>
 	const modalRowsPerPageOptions = [10, 25, 50, 100];
 	let modalCurrentPage = 1;
@@ -418,6 +425,7 @@
 			document.getElementById("panjang").removeAttribute('required');
 			document.getElementById("lebar").removeAttribute('required');
 			document.getElementById("bahan_terpakai").removeAttribute('required');
+			document.getElementById("qty").removeAttribute('required');
 
 			// Set 'required' untuk produk PCS
 			document.getElementById("harga_pcs").setAttribute('required', 'true');
@@ -436,6 +444,7 @@
 			document.getElementById("panjang").setAttribute('required', 'true');
 			document.getElementById("lebar").setAttribute('required', 'true');
 			document.getElementById("bahan_terpakai").setAttribute('required', 'true');
+			document.getElementById("qty").setAttribute('required', 'true');
 		}
 	}
 
@@ -454,8 +463,9 @@
 		const hargaPerMeter = parseFloat(document.getElementById("harga_per_meter").value.replace(',', '.')) || 0;
 		const panjang = parseFloat(document.getElementById("panjang").value.replace(',', '.')) || 0;
 		const lebar = parseFloat(document.getElementById("lebar").value.replace(',', '.')) || 0;
+		const qty = parseFloat(document.getElementById("qty").value.replace(',', '.')) || 0;
 
-		const subTotal = hargaPerMeter * (panjang + lebar);
+		const subTotal = (panjang + lebar) * hargaPerMeter * qty;
 
 		// Menampilkan hasil di input yang sesuai
 		document.getElementById("sub_total").value = subTotal.toFixed(2);
@@ -590,25 +600,30 @@
 		const kurangRow = document.getElementById("kurangRow");
 		const kembalianRow = document.getElementById("kembalianRow");
 		const uangDibayarkanRow = document.getElementById("uangDibayarkanRow");
+		const totalBayar = parseFloat(document.getElementById("totalBayar").value) || 0;
 
 		if (status === "dp") {
 			uangDibayarkanRow.style.display = "flex";
 			kurangRow.style.display = "flex";
 			kembalianRow.style.display = "none";
+			document.getElementById("uangDibayarkan").value = ""; // Reset input uang yang dibayarkan
+			document.getElementById("kurang").value = ""; // Reset kurang
+			document.getElementById("kurangHidden").value = "";
 			document.getElementById("kembalian").value = ""; // Reset kembalian jika status DP
 		} else if (status === "lunas") {
 			uangDibayarkanRow.style.display = "flex";
 			kurangRow.style.display = "none";
 			kembalianRow.style.display = "flex";
+			document.getElementById("uangDibayarkan").value = totalBayar; // Set uang yang dibayarkan menjadi total
 			document.getElementById("kurang").value = ""; // Reset kurang jika status Lunas
+			document.getElementById("kurangHidden").value = 0; // Set kurang menjadi 0
 		} else if (status === "hutang") {
 			uangDibayarkanRow.style.display = "none"; // Sembunyikan Uang yang Dibayarkan
 			kurangRow.style.display = "flex";
 			kembalianRow.style.display = "none";
-			document.getElementById("kurang").value = "Rp. " + parseFloat(document.getElementById("totalBayar").value)
-				.toLocaleString("id-ID"); // Tampilkan total bayar di kolom kurang
-			document.getElementById("kurangHidden").value = parseFloat(document.getElementById("totalBayar")
-			.value); // Simpan nilai kurang
+			document.getElementById("kurang").value = "Rp. " + totalBayar.toLocaleString("id-ID"); // Tampilkan total bayar di kolom kurang
+			document.getElementById("kurangHidden").value = totalBayar; // Simpan nilai kurang
+			document.getElementById("uangDibayarkan").value = 0; // Set uang dibayarkan menjadi 0
 			document.getElementById("kembalian").value = ""; // Reset kembalian
 		}
 	}
@@ -624,8 +639,7 @@
 			document.getElementById("kurangHidden").value = kurang; // Menyimpan nilai kurang ke input tersembunyi
 		} else if (status === "lunas") {
 			const kembalian = uangDibayarkan - totalBayar;
-			document.getElementById("kembalian").value = kembalian > 0 ? "Rp. " + kembalian.toLocaleString("id-ID") :
-				"Rp. 0";
+			document.getElementById("kembalian").value = kembalian > 0 ? "Rp. " + kembalian.toLocaleString("id-ID") : "Rp. 0";
 			document.getElementById("kurangHidden").value = 0; // Set nilai kurang menjadi 0 jika lunas
 		}
 	}

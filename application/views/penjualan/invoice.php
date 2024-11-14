@@ -15,6 +15,9 @@
             header, title, .button-container {
                 display: none;
             }
+            .button-container, .button, header, title {
+                display: none !important;
+            }
             .button {
                 display: none;
             }
@@ -166,7 +169,6 @@
         <tr class="heading">
             <td>No</td>
             <td>Keterangan</td>
-            <td>Produk</td>
             <td>Panjang</td>
             <td>Lebar</td>
             <td>Quantity</td>
@@ -177,45 +179,46 @@
         <tr class="item">
             <td><?= $no; ?></td>
             <td><?= $row['deskripsi']; ?></td>
-            <td><?= $row['nama_produk']; ?></td>
             <td><?= $row['panjang']; ?></td>
             <td><?= $row['lebar']; ?></td>
-            <td><?= $row['bahan_terpakai']; ?></td>
+            <td><?= $row['qty']; ?></td>
             <td>Rp <?= number_format($row['sub_total']); ?></td>
         </tr>
         <?php $total += $row['sub_total']; $no++; } ?>
 
         <tr class="total">
-            <td colspan="6" class="text-right"><strong>Subtotal:</strong></td>
+            <td colspan="5" class="text-right"><strong>Subtotal:</strong></td>
             <td colspan="2">Rp <?= number_format($total ?? 0); ?></td>
         </tr>
 
         <tr class="total">
             <?php if ($penjualan->uang_muka != 0): ?>
-            <td colspan="6" class="text-right"><strong>DP:</strong></td>
+            <td colspan="5" class="text-right"><strong>DP:</strong></td>
             <td colspan="2">Rp <?= number_format($penjualan->uang_muka ?? 0); ?></td>
             <?php else: ?>
-            <td colspan="6" class="text-right"><strong>Jumlah Uang:</strong></td>
+            <td colspan="5" class="text-right"><strong>Jumlah Uang:</strong></td>
             <td colspan="2">Rp <?= number_format($penjualan->uang_dibayar ?? 0); ?></td>
             <?php endif; ?>
         </tr>
 
         <tr class="total">
             <?php if ($penjualan->jumlah_kurang == 0): ?>
-                <td colspan="6" class="text-right"><strong>Kembalian:</strong></td>
+                <td colspan="5" class="text-right"><strong>Kembalian:</strong></td>
                 <td colspan="2">Rp <?= number_format(($penjualan->uang_dibayar ?? $penjualan->uang_muka) - $total); ?></td>
             <?php else: ?>
-                <td colspan="6" class="text-right"><strong>Kurang:</strong></td>
+                <td colspan="5" class="text-right"><strong>Kurang:</strong></td>
                 <td colspan="2">Rp <?= number_format($penjualan->jumlah_kurang ?? 0); ?></td>
             <?php endif; ?>
         </tr>
     </table>
 
     <div class="notes">
-        <p><strong>Perhatian:</strong> Mohon barang dicek terlebih dahulu. Komplain lebih dari 1 hari tidak akan dilayani. Pembayaran transfer ke Ariska Prima Diastari:</p>
+        <p><strong>Perhatian:</strong> Mohon barang dicek terlebih dahulu. Komplain lebih dari 1 hari tidak akan dilayani.</p>
+        <p>Pembayaran transfer ke Ariska Prima Diastari:</p>
         <ul>
             <li>BRI: 670-70-10-28864537</li>
             <li>BCA: 0154361801</li>
+            <li>BPD JATENG: 3142069325</li>
         </ul>
     </div>
 

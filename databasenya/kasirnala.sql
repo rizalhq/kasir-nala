@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 13 Nov 2024 pada 15.26
+-- Waktu pembuatan: 14 Nov 2024 pada 16.39
 -- Versi server: 10.4.27-MariaDB
 -- Versi PHP: 8.1.12
 
@@ -37,6 +37,7 @@ CREATE TABLE `detail_penjualan` (
   `id_pelanggan` int(11) NOT NULL,
   `panjang` varchar(50) NOT NULL,
   `lebar` varchar(50) NOT NULL,
+  `qty` int(11) NOT NULL,
   `status_pembayaran` enum('sudah','belum') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -44,8 +45,8 @@ CREATE TABLE `detail_penjualan` (
 -- Dumping data untuk tabel `detail_penjualan`
 --
 
-INSERT INTO `detail_penjualan` (`id_detail`, `kode_penjualan`, `id_produk`, `sub_total`, `deskripsi`, `bahan_terpakai`, `id_pelanggan`, `panjang`, `lebar`, `status_pembayaran`) VALUES
-(100, '1', 19, '30000.00', 'ww', '1', 7, '0', '0', 'sudah');
+INSERT INTO `detail_penjualan` (`id_detail`, `kode_penjualan`, `id_produk`, `sub_total`, `deskripsi`, `bahan_terpakai`, `id_pelanggan`, `panjang`, `lebar`, `qty`, `status_pembayaran`) VALUES
+(133, '1', 19, '35000.00', '1', '1', 7, '0', '0', 1, 'sudah');
 
 -- --------------------------------------------------------
 
@@ -80,15 +81,16 @@ CREATE TABLE `pembayaran` (
   `status_pembayaran` enum('Belum Lunas','Lunas') NOT NULL,
   `jumlah_kurang` varchar(50) NOT NULL,
   `uang_muka` varchar(50) NOT NULL,
-  `uang_dibayar` varchar(50) NOT NULL
+  `uang_dibayar` varchar(50) NOT NULL,
+  `kembalian` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data untuk tabel `pembayaran`
 --
 
-INSERT INTO `pembayaran` (`id_pembayaran`, `id_penjualan`, `status_pembayaran`, `jumlah_kurang`, `uang_muka`, `uang_dibayar`) VALUES
-(23, 33, 'Belum Lunas', '30000', '0', '0');
+INSERT INTO `pembayaran` (`id_pembayaran`, `id_penjualan`, `status_pembayaran`, `jumlah_kurang`, `uang_muka`, `uang_dibayar`, `kembalian`) VALUES
+(39, 49, 'Lunas', '0', '0', '40000', '5000');
 
 -- --------------------------------------------------------
 
@@ -130,7 +132,7 @@ CREATE TABLE `penjualan` (
 --
 
 INSERT INTO `penjualan` (`id_penjualan`, `kode_penjualan`, `total_harga`, `id_pelanggan`, `tanggal_penjualan`, `status_pembayaran`) VALUES
-(33, '1', 30000, '7', '2024-11-13', 'sudah');
+(49, '1', 35000, '7', '2024-11-14', 'sudah');
 
 -- --------------------------------------------------------
 
@@ -261,7 +263,7 @@ ALTER TABLE `stok`
 -- AUTO_INCREMENT untuk tabel `detail_penjualan`
 --
 ALTER TABLE `detail_penjualan`
-  MODIFY `id_detail` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
+  MODIFY `id_detail` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=134;
 
 --
 -- AUTO_INCREMENT untuk tabel `pelanggan`
@@ -273,7 +275,7 @@ ALTER TABLE `pelanggan`
 -- AUTO_INCREMENT untuk tabel `pembayaran`
 --
 ALTER TABLE `pembayaran`
-  MODIFY `id_pembayaran` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id_pembayaran` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT untuk tabel `pengeluaran`
@@ -285,7 +287,7 @@ ALTER TABLE `pengeluaran`
 -- AUTO_INCREMENT untuk tabel `penjualan`
 --
 ALTER TABLE `penjualan`
-  MODIFY `id_penjualan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id_penjualan` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT untuk tabel `produk`

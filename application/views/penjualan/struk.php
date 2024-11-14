@@ -97,7 +97,7 @@
     <div class="receipt">
         <div class="header">
             <h2>NALAMEDIA</h2>
-            <p>Jl. Prof. M Yamin No.14, RT04/RW02<br>Cirebonan - Karanganyar<br>(Timur Stadion 45)<br>081398727722</p>
+            <p>Jl. Prof. M Yamin No.14, RT04/RW02<br>Cerbonan - Karanganyar<br>(Timur Stadion 45)<br>081398727722</p>
         </div>
         <div class="details">
             <!-- Garis di atas No. Nota -->
@@ -110,9 +110,9 @@
             <tr class="heading">
                 <th>No</th>
                 <th>Keterangan</th>
-                <th>Produk</th>
                 <th>Panjang</th>
                 <th>Lebar</th>
+                <th>Qty</th>
                 <th>Harga</th>
             </tr>
             
@@ -120,9 +120,9 @@
             <tr class="item">
                 <td><?= $no; ?></td>
                 <td><?= $row['deskripsi']; ?></td>
-                <td><?= $row['nama_produk']; ?></td>
                 <td><?= $row['panjang']; ?></td>
                 <td><?= $row['lebar']; ?></td>
+                <td><?= $row['qty']; ?></td>
                 <td><?= number_format($row['sub_total']); ?></td>
             </tr>
             <?php $total += $row['sub_total']; $no++; } ?>

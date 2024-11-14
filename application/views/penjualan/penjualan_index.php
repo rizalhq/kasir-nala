@@ -143,7 +143,7 @@
 					<td>Rp. <?= number_format($row['jumlah_kurang']) ?></td>
 					<td>
 						<a href="<?= base_url('penjualan/invoice/'.$row['kode_penjualan']) ?>"
-							class="btn btn-info btn-sm text-white" target="_blank">Lihat detail</a>
+							class="btn btn-info btn-sm text-white">Lihat detail</a>
 						<button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal"
 							data-bs-target="#pembayaran-<?= $row['id_penjualan'] ?>">
 							Edit Pembayaran
@@ -154,48 +154,45 @@
 					</td>
 				</tr>
 				<!-- edit -->
-				<div class="modal fade" id="pembayaran-<?= $row['id_penjualan'] ?>" tabindex="-1"
-					aria-labelledby="gantiprodukLabel" aria-hidden="true"
-					data-status-pembayaran="<?= $row['status_pembayaran'] ?>">
-					<div class="modal-dialog">
-						<form action="<?= base_url('penjualan/update/' . $row['id_penjualan']) ?>" method="post">
-							<div class="modal-content">
-								<div class="modal-header">
-									<h5 class="modal-title" id="gantiproduk"><?= $row['kode_penjualan'] ?>
-										(<?= $row['status_pembayaran'] ?>)</h5>
-									<button type="button" class="btn-close" data-bs-dismiss="modal"
-										aria-label="Close"></button>
-								</div>
-								<div class="modal-body">
-									<div class="mb-3">
-										<label class="form-label">Kekurangan</label>
-										<input type="text" class="form-control"
-											id="kekuranganInput-<?= $row['id_penjualan'] ?>"
-											value="<?= $row['jumlah_kurang'] ?>" readonly>
-									</div>
-									<div class="mb-3" id="bayarInput">
-										<label class="form-label">Bayar</label>
-										<input type="number" class="form-control"
-											id="bayarInput-<?= $row['id_penjualan'] ?>" name="uang_dibayar"
-											value="<?= $row['uang_dibayar'] ?>"
-											oninput="calculateTotalAkhir(<?= $row['id_penjualan'] ?>)" required>
-									</div>
-									<div class="mb-3" id="totalAkhirInput">
-										<label class="form-label">Total Akhir</label>
-										<input type="text" class="form-control"
-											id="totalAkhirInput-<?= $row['id_penjualan'] ?>" name="total_akhir"
-											readonly>
-									</div>
-								</div>
-								<div class="modal-footer">
-									<button type="button" class="btn btn-secondary"
-										data-bs-dismiss="modal">Batal</button>
-									<button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-								</div>
-							</div>
-						</form>
+<div class="modal fade" id="pembayaran-<?= $row['id_penjualan'] ?>" tabindex="-1"
+     aria-labelledby="gantiprodukLabel" aria-hidden="true"
+     data-status-pembayaran="<?= $row['status_pembayaran'] ?>">
+    <div class="modal-dialog">
+        <form action="<?= base_url('penjualan/update/' . $row['id_penjualan']) ?>" method="post">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="gantiproduk"><?= $row['kode_penjualan'] ?> (<?= $row['status_pembayaran'] ?>)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+				<div class="modal-body">
+					<div class="mb-3">
+						<label class="form-label">Kekurangan</label>
+						<input type="text" class="form-control" id="kekuranganInput-<?= $row['id_penjualan'] ?>" value="<?= $row['jumlah_kurang'] ?>" readonly>
+					</div>
+					<div class="mb-3" id="bayarInput">
+						<label class="form-label">Bayar</label>
+						<input type="number" class="form-control" id="bayarInput-<?= $row['id_penjualan'] ?>" name="uang_dibayar" value="<?= $row['uang_dibayar'] ?>" oninput="calculateTotalAkhir(<?= $row['id_penjualan'] ?>)" required>
+					</div>
+					<div class="mb-3" id="totalAkhirInput">
+						<label class="form-label">Total Kurang</label>
+						<input type="text" class="form-control" id="totalAkhirInput-<?= $row['id_penjualan'] ?>" name="total_akhir" readonly>
+					</div>
+					<div class="mb-3" id="kembalianInput" style="display: none;">
+						<label class="form-label">Kembalian</label>
+						<input type="text" class="form-control" id="kembalianInput-<?= $row['id_penjualan'] ?>" name="kembalian" readonly>
 					</div>
 				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary">Simpan Pembayaran</button>
+				</div>
+            </div>
+        </form>
+    </div>
+</div>
+            </div>
+        </form>
+    </div>
+</div>
 				<?php $no++; } ?>
 			</tbody>
 		</table>
@@ -394,16 +391,22 @@
 		document.querySelectorAll('.modal').forEach(function (modal) {
 			const statusPembayaran = modal.getAttribute('data-status-pembayaran');
 			const modalId = modal.id.split('-')[1];
-
-			const bayarInput = modal.querySelector('#bayarInput');
-			const totalAkhirInput = modal.querySelector('#totalAkhirInput');
+			const bayarInput = modal.querySelector(`#bayarInput-${modalId}`);
+			const totalAkhirInput = modal.querySelector(`#totalAkhirInput-${modalId}`);
+			const kekuranganInput = modal.querySelector(`#kekuranganInput-${modalId}`);
+			const kembalianInput = modal.querySelector(`#kembalianInput-${modalId}`);
 
 			if (statusPembayaran === 'Lunas') {
-				bayarInput.style.display = 'none';
-				totalAkhirInput.style.display = 'none';
+				bayarInput.parentElement.style.display = 'none';
+				totalAkhirInput.parentElement.style.display = 'none';
+				kembalianInput.parentElement.style.display = 'none';
 			} else {
 				calculateTotalAkhir(modalId);
 			}
+
+			bayarInput.addEventListener('input', function () {
+				calculateTotalAkhir(modalId);
+			});
 		});
 	});
 
@@ -411,16 +414,26 @@
 		const kekurangan = parseFloat(document.getElementById(`kekuranganInput-${id}`).value) || 0;
 		const bayar = parseFloat(document.getElementById(`bayarInput-${id}`).value) || 0;
 		let totalAkhir = kekurangan - bayar;
+		const kembalianInput = document.getElementById(`kembalianInput-${id}`);
 
+		// Hitung Total Akhir
 		if (totalAkhir < 0) {
 			totalAkhir = 0;
+			kembalianInput.parentElement.style.display = 'block';
+			kembalianInput.value = Math.abs(kekurangan - bayar); // Nilai kembalian jika bayar > kekurangan
+		} else {
+			kembalianInput.parentElement.style.display = 'none';
+			kembalianInput.value = 0;
 		}
 
 		document.getElementById(`totalAkhirInput-${id}`).value = totalAkhir;
 
+		// Update status pembayaran di modal jika kekurangan adalah 0
 		const statusLabel = document.querySelector(`#pembayaran-${id} .modal-title`);
 		if (totalAkhir === 0) {
 			statusLabel.textContent = statusLabel.textContent.replace(/Lunas|Belum Lunas/, "Lunas");
+		} else {
+			statusLabel.textContent = statusLabel.textContent.replace(/Lunas|Belum Lunas/, "Belum Lunas");
 		}
 	}
 </script>

@@ -13,7 +13,7 @@ class Home extends CI_Controller {
     }
 	public function index() {
 		// Hitung pemasukan (total uang muka + uang dibayar)
-		$this->db->select('SUM(uang_muka + uang_dibayar) as total_pemasukan');
+		$this->db->select('SUM(uang_muka + uang_dibayar - kembalian) as total_pemasukan');
 		$this->db->from('pembayaran');
 		$pemasukan = $this->db->get()->row()->total_pemasukan ?? 0;
 	

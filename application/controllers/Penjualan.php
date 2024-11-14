@@ -25,7 +25,7 @@ class Penjualan extends CI_Controller {
         $pelanggan = $this->db->get()->result_array();
     
         // Hitung pemasukan hari ini (total uang muka + uang dibayar)
-        $this->db->select('SUM(uang_muka + uang_dibayar) as total_pemasukan');
+        $this->db->select('SUM(uang_muka + uang_dibayar - kembalian) as total_pemasukan');
         $this->db->from('pembayaran');
         $this->db->join('penjualan', 'pembayaran.id_penjualan = penjualan.id_penjualan', 'left');
         $this->db->where('penjualan.tanggal_penjualan', $today);
@@ -139,10 +139,12 @@ class Penjualan extends CI_Controller {
     }
     
     public function tambahkeranjang() {
-        // Ambil `id_produk`, `kode_penjualan`, dan `id_pelanggan` dari input
+        // Ambil `id_produk`, `kode_penjualan`, `id_pelanggan`, `jumlah_pcs`, dan `qty` dari input
         $id_produk = $this->input->post('id_produk');
         $kode_penjualan = $this->input->post('kode_penjualan');
         $id_pelanggan = $this->input->post('id_pelanggan');
+        $jumlah_pcs = (int) $this->input->post('jumlah_pcs'); // Jumlah pcs
+        $qty_input = (int) $this->input->post('qty'); // Nilai qty dari input pengguna
     
         // Cek apakah kode_penjualan ini sudah dibayar di tabel utama penjualan
         $this->db->from('penjualan');
@@ -151,7 +153,6 @@ class Penjualan extends CI_Controller {
         $cek_kode_sudah_dibayar = $this->db->get()->num_rows();
     
         if ($cek_kode_sudah_dibayar > 0) {
-            // Jika kode_penjualan sudah dibayar, tampilkan pesan error
             $this->session->set_flashdata('notifikasi', '
                 <div class="alert alert-danger" role="alert">Kode penjualan ini sudah dibayar dan tidak bisa digunakan lagi!</div>
             ');
@@ -159,7 +160,7 @@ class Penjualan extends CI_Controller {
             return;
         }
     
-        // Cek apakah pelanggan sudah memiliki kode_penjualan berbeda yang belum selesai (status_pembayaran = 'belum')
+        // Cek apakah pelanggan sudah memiliki kode_penjualan berbeda yang belum selesai
         $this->db->from('detail_penjualan');
         $this->db->where('id_pelanggan', $id_pelanggan);
         $this->db->where('status_pembayaran', 'belum');
@@ -168,7 +169,6 @@ class Penjualan extends CI_Controller {
         if (!empty($cek_transaksi)) {
             $kode_penjualan_eksisting = $cek_transaksi[0]['kode_penjualan'];
             if ($kode_penjualan_eksisting !== $kode_penjualan) {
-                // Jika ada kode_penjualan berbeda, tampilkan pesan error
                 $this->session->set_flashdata('notifikasi', '
                     <div class="alert alert-danger" role="alert">Anda hanya dapat menggunakan satu kode penjualan dalam satu transaksi!</div>
                 ');
@@ -192,14 +192,17 @@ class Penjualan extends CI_Controller {
         }
     
         // Konversi inputan koma menjadi titik pada `bahan_terpakai`, `panjang`, dan `lebar`
-        $bahan_terpakai = (float) str_replace(',', '.', $this->input->post('jumlah_pcs') ?: $this->input->post('bahan_terpakai'));
+        $bahan_terpakai = (float) str_replace(',', '.', $jumlah_pcs ?: $this->input->post('bahan_terpakai'));
         $panjang = (float) str_replace(',', '.', $this->input->post('panjang') ?: 0);
         $lebar = (float) str_replace(',', '.', $this->input->post('lebar') ?: 0);
     
         // Hitung stok sekarang
         $stok_sekarang = $stok_lama - $bahan_terpakai;
     
-        // Data yang akan disimpan, tambahkan 'status_pembayaran' => 'belum'
+        // Jumlahkan nilai qty dan jumlah_pcs untuk dimasukkan ke database
+        $qty_total = $qty_input + $jumlah_pcs;
+    
+        // Data yang akan disimpan, dengan qty_total yang sudah ditambahkan jumlah_pcs
         $data = array(
             'kode_penjualan' => $kode_penjualan,
             'id_produk'      => $id_produk,
@@ -209,7 +212,8 @@ class Penjualan extends CI_Controller {
             'panjang'        => $panjang,
             'lebar'          => $lebar,
             'bahan_terpakai' => $bahan_terpakai,
-            'status_pembayaran' => 'belum'
+            'status_pembayaran' => 'belum',
+            'qty'               => $qty_total, // Total qty + jumlah_pcs
         );
     
         if ($stok_lama >= $bahan_terpakai) {
@@ -303,24 +307,22 @@ class Penjualan extends CI_Controller {
         // Redirect kembali ke halaman sebelumnya
         redirect($_SERVER['HTTP_REFERER']);
     }
-    
     public function bayar() {
-        $kode_penjualan = $this->input->post('nota'); // Ambil kode penjualan
-        $id_pelanggan = $this->input->post('id_pelanggan'); // Ambil ID pelanggan
-        $total_harga = $this->input->post('total'); // Ambil total harga
-        $status_pembayaran = $this->input->post('status_pembayaran'); // Ambil status pembayaran
-        $uang_dibayarkan = $this->input->post('uang_dibayarkan'); // Ambil uang yang dibayarkan
-        $kurang = $this->input->post('kurangHidden'); // Ambil nilai kurang dari input tersembunyi
-        $tanggal = date('Y-m-d'); // Ambil tanggal hari ini
+        $kode_penjualan = $this->input->post('nota');
+        $id_pelanggan = $this->input->post('id_pelanggan');
+        $total_harga = $this->input->post('total');
+        $status_pembayaran = $this->input->post('status_pembayaran');
+        $uang_dibayarkan = $this->input->post('uang_dibayarkan');
+        $kurang = $this->input->post('kurangHidden');
+        $tanggal = date('Y-m-d');
     
-        // Validasi total_harga
         if (empty($total_harga)) {
             $this->session->set_flashdata('notifikasi', '
                 <div class="alert alert-danger" role="alert">
                     <strong>Error - </strong> Total harga tidak boleh kosong!
                 </div>
             ');
-            redirect('penjualan'); // Ganti dengan rute yang sesuai
+            redirect('penjualan');
             return;
         }
     
@@ -332,39 +334,62 @@ class Penjualan extends CI_Controller {
             'tanggal_penjualan' => $tanggal
         );
     
-        // Simpan data ke tabel penjualan
         $this->db->insert('penjualan', $data_penjualan);
-        $id_penjualan = $this->db->insert_id(); // Ambil ID penjualan yang baru ditambahkan
+        $id_penjualan = $this->db->insert_id();
     
-        // Data untuk tabel pembayaran
-        $data_pembayaran = array(
-            'id_penjualan'      => $id_penjualan,
-            'status_pembayaran' => $status_pembayaran === "lunas" ? "Lunas" : "Belum Lunas",
-            'jumlah_kurang'     => ($status_pembayaran === "lunas") ? 0 : $kurang,
-            'uang_muka'         => ($status_pembayaran === "hutang") ? 0 : $uang_dibayarkan, // Simpan 0 jika hutang
-            'uang_dibayar'      => ($status_pembayaran === "lunas") ? $uang_dibayarkan : 0 // Simpan uang dibayarkan jika lunas, atau 0 jika hutang
-        );
+        // Inisialisasi variabel untuk menyimpan kembalian
+        $kembalian = 0;
+    
+        // Logika berdasarkan status pembayaran
+        if ($status_pembayaran === "lunas") {
+            // Hitung kembalian untuk status lunas
+            $kembalian = max(0, $uang_dibayarkan - $total_harga); // Pastikan kembalian tidak negatif
+            $data_pembayaran = array(
+                'id_penjualan'      => $id_penjualan,
+                'status_pembayaran' => "Lunas",
+                'jumlah_kurang'     => 0,
+                'uang_muka'         => 0,
+                'uang_dibayar'      => $uang_dibayarkan,
+                'kembalian'         => $kembalian // Simpan kembalian ke database
+            );
+        } elseif ($status_pembayaran === "dp") {
+            $data_pembayaran = array(
+                'id_penjualan'      => $id_penjualan,
+                'status_pembayaran' => "Belum Lunas",
+                'jumlah_kurang'     => $kurang,
+                'uang_muka'         => $uang_dibayarkan,
+                'uang_dibayar'      => 0,
+                'kembalian'         => 0 // Tidak ada kembalian untuk DP
+            );
+        } else { // status hutang
+            $data_pembayaran = array(
+                'id_penjualan'      => $id_penjualan,
+                'status_pembayaran' => "Belum Lunas",
+                'jumlah_kurang'     => $kurang,
+                'uang_muka'         => 0,
+                'uang_dibayar'      => 0,
+                'kembalian'         => 0 // Tidak ada kembalian untuk hutang
+            );
+        }
     
         // Simpan data ke tabel pembayaran
         $this->db->insert('pembayaran', $data_pembayaran);
     
-        // Update status_pembayaran pada tabel detail_penjualan menjadi 'sudah'
+        // Update status pembayaran pada tabel detail_penjualan menjadi 'sudah'
         $this->db->where('kode_penjualan', $kode_penjualan);
         $this->db->where('id_pelanggan', $id_pelanggan);
         $this->db->update('detail_penjualan', array('status_pembayaran' => 'sudah'));
     
-        // Set notifikasi
         $this->session->set_flashdata('notifikasi', '
             <div class="alert alert-success" role="alert">
                 <strong>Berhasil - </strong> Penjualan berhasil!
             </div>
         '); 
     
-        // Redirect ke halaman invoice
         redirect('penjualan/invoice/'.$kode_penjualan);
     }
     
-     
+    
     public function invoice($kode_penjualan){
 		$this->db->select('*');
 		$this->db->from('penjualan a')->order_by('a.tanggal_penjualan','DESC')->where('a.kode_penjualan',$kode_penjualan);
@@ -406,45 +431,57 @@ class Penjualan extends CI_Controller {
         $this->load->view('penjualan/struk',$data); // Tampilkan halaman struk
     }
     public function update($id_penjualan) {
-        // Ambil nilai dari form
-        $uang_dibayar_baru = $this->input->post('uang_dibayar'); // Inputan bayar baru
+        // Ambil nilai input 'uang_dibayar' dari form pembayaran
+        $uang_dibayar_baru = $this->input->post('uang_dibayar'); // Nilai baru yang dibayar
     
-        // Ambil data pembayaran lama dari database berdasarkan ID penjualan
+        // Ambil data pembayaran dari database
         $pembayaran = $this->db->get_where('pembayaran', ['id_penjualan' => $id_penjualan])->row();
     
-        // Hitung total uang dibayar dan kekurangan baru
-        $total_uang_dibayar = $pembayaran->uang_dibayar + $uang_dibayar_baru;
-        $jumlah_kurang_baru = $pembayaran->jumlah_kurang - $uang_dibayar_baru;
-    
-        // Jika jumlah kurang di bawah 0, set menjadi 0 dan update uang_dibayar dengan sisa kekurangan
-        if ($jumlah_kurang_baru <= 0) {
-            $jumlah_kurang_baru = 0;
-            $total_uang_dibayar = $pembayaran->uang_dibayar + $pembayaran->jumlah_kurang;
+        // Jika tidak ada data pembayaran, kembali dengan error
+        if (!$pembayaran) {
+            $this->session->set_flashdata('notifikasi', '
+                <div class="alert alert-danger" role="alert">
+                    <strong>Error - </strong> Pembayaran tidak ditemukan!
+                </div>
+            ');
+            redirect('penjualan');
+            return;
         }
     
-        // Update status pembayaran jika jumlah_kurang mencapai 0
+        // Hitung total uang yang telah dibayarkan dan kekurangan terbaru
+        $total_uang_dibayar = $pembayaran->uang_dibayar + $uang_dibayar_baru; // Menambahkan nilai uang_dibayar baru ke uang_dibayar yang sudah ada
+        $jumlah_kurang_baru = max(0, $pembayaran->jumlah_kurang - $uang_dibayar_baru); // Pastikan jumlah kurang tidak negatif
+    
+        // Hitung kembalian jika uang_dibayar lebih besar dari jumlah kurang
+        $kembalian = 0;
+        if ($uang_dibayar_baru > $pembayaran->jumlah_kurang) {
+            $kembalian = $uang_dibayar_baru - $pembayaran->jumlah_kurang;
+            $jumlah_kurang_baru = 0;  // Set kekurangan jadi 0 jika sudah lunas
+        }
+    
+        // Tentukan status pembayaran
         $status_pembayaran = ($jumlah_kurang_baru == 0) ? 'Lunas' : 'Belum Lunas';
     
-        // Data yang akan diupdate pada tabel pembayaran
+        // Update tabel pembayaran
         $data_pembayaran = [
-            'uang_dibayar' => $total_uang_dibayar,
-            'jumlah_kurang' => $jumlah_kurang_baru,
-            'status_pembayaran' => $status_pembayaran
+            'uang_dibayar' => $total_uang_dibayar,  // Total uang yang sudah dibayar
+            'jumlah_kurang' => $jumlah_kurang_baru,  // Sisa kekurangan
+            'status_pembayaran' => $status_pembayaran,  // Status pembayaran
+            'kembalian' => $kembalian  // Menyimpan kembalian ke database jika ada
         ];
     
-        // Update data di tabel pembayaran
         $this->db->where('id_penjualan', $id_penjualan);
         $this->db->update('pembayaran', $data_pembayaran);
     
         // Set notifikasi sukses
         $this->session->set_flashdata('notifikasi', '
             <div class="alert alert-success" role="alert">
-                <strong>Berhasil - </strong> Pembayaran berhasil diperbarui!
+                <strong>Berhasil - </strong> Pembayaran berhasil diperbarui!' .
+                ($kembalian > 0 ? " Kembalian: Rp. " . number_format($kembalian, 0, ',', '.') : '') . '
             </div>
         ');
     
-        // Redirect kembali ke halaman penjualan atau halaman lain yang sesuai
+        // Redirect kembali ke halaman penjualan
         redirect('penjualan');
-    }
-    
+    }    
 }
