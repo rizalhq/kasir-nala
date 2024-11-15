@@ -98,7 +98,7 @@ class Penjualan extends CI_Controller {
         $this->db->from('penjualan');
         $this->db->join('detail_penjualan', 'penjualan.kode_penjualan = detail_penjualan.kode_penjualan', 'left');
         $this->db->where('detail_penjualan.id_pelanggan', $id_pelanggan);
-        $this->db->where('detail_penjualan.status_pembayaran', 'sudah'); // status pembayaran sudah dibayar
+        $this->db->where('detail_penjualan.status_detail_penjualan', 'sudah'); // status pembayaran sudah dibayar
         $kode_penjualan_dibayar = $this->db->get()->row(); // Ambil data kode_penjualan yang sudah dibayar
     
         if ($kode_penjualan_dibayar) {
@@ -112,7 +112,7 @@ class Penjualan extends CI_Controller {
         $this->db->select('kode_penjualan');
         $this->db->from('detail_penjualan');
         $this->db->where('id_pelanggan', $id_pelanggan);
-        $this->db->where('status_pembayaran', 'belum'); // Hanya yang belum dibayar
+        $this->db->where('status_detail_penjualan', 'belum'); // Hanya yang belum dibayar
         $this->db->order_by('id_detail', 'DESC');
         $kode_penjualan_belum_dibayar = $this->db->get()->row()->kode_penjualan ?? null;
     
@@ -120,7 +120,7 @@ class Penjualan extends CI_Controller {
         $this->db->from('detail_penjualan a');
         $this->db->join('produk b', 'a.id_produk = b.id_produk', 'left');
         $this->db->where('a.id_pelanggan', $id_pelanggan);
-        $this->db->where('a.status_pembayaran', 'belum'); // Hanya ambil item dengan status belum dibayar
+        $this->db->where('a.status_detail_penjualan', 'belum'); // Hanya ambil item dengan status belum dibayar
         $detail = $this->db->get()->result_array();
     
         // Kirim data ke view
@@ -149,7 +149,7 @@ class Penjualan extends CI_Controller {
         // Cek apakah kode_penjualan ini sudah dibayar di tabel utama penjualan
         $this->db->from('penjualan');
         $this->db->where('kode_penjualan', $kode_penjualan);
-        $this->db->where('status_pembayaran', 'sudah');
+        $this->db->where('status_penjualan', 'sudah');
         $cek_kode_sudah_dibayar = $this->db->get()->num_rows();
     
         if ($cek_kode_sudah_dibayar > 0) {
@@ -163,7 +163,7 @@ class Penjualan extends CI_Controller {
         // Cek apakah pelanggan sudah memiliki kode_penjualan berbeda yang belum selesai
         $this->db->from('detail_penjualan');
         $this->db->where('id_pelanggan', $id_pelanggan);
-        $this->db->where('status_pembayaran', 'belum');
+        $this->db->where('status_detail_penjualan', 'belum');
         $cek_transaksi = $this->db->get()->result_array();
     
         if (!empty($cek_transaksi)) {
@@ -212,7 +212,7 @@ class Penjualan extends CI_Controller {
             'panjang'        => $panjang,
             'lebar'          => $lebar,
             'bahan_terpakai' => $bahan_terpakai,
-            'status_pembayaran' => 'belum',
+            'status_detail_penjualan' => 'belum',
             'qty'               => $qty_total, // Total qty + jumlah_pcs
         );
     
@@ -378,7 +378,7 @@ class Penjualan extends CI_Controller {
         // Update status pembayaran pada tabel detail_penjualan menjadi 'sudah'
         $this->db->where('kode_penjualan', $kode_penjualan);
         $this->db->where('id_pelanggan', $id_pelanggan);
-        $this->db->update('detail_penjualan', array('status_pembayaran' => 'sudah'));
+        $this->db->update('detail_penjualan', array('status_detail_penjualan' => 'sudah'));
     
         $this->session->set_flashdata('notifikasi', '
             <div class="alert alert-success" role="alert">
