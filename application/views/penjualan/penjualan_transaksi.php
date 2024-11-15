@@ -465,7 +465,7 @@
 		const lebar = parseFloat(document.getElementById("lebar").value.replace(',', '.')) || 0;
 		const qty = parseFloat(document.getElementById("qty").value.replace(',', '.')) || 0;
 
-		const subTotal = (panjang + lebar) * hargaPerMeter * qty;
+		const subTotal = panjang * lebar * hargaPerMeter * qty;
 
 		// Menampilkan hasil di input yang sesuai
 		document.getElementById("sub_total").value = subTotal.toFixed(2);
